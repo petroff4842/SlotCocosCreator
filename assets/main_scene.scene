@@ -11,7 +11,7 @@
   },
   {
     "__type__": "cc.Scene",
-    "_name": "scene-2d",
+    "_name": "main_scene",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": null,
@@ -52,7 +52,7 @@
     },
     "autoReleaseAssets": false,
     "_globals": {
-      "__id__": 24
+      "__id__": 25
     },
     "_id": "f75551a5-bb47-4b55-9ef8-cf056a7f7251"
   },
@@ -75,13 +75,13 @@
     "_active": true,
     "_components": [
       {
-        "__id__": 21
-      },
-      {
         "__id__": 22
       },
       {
         "__id__": 23
+      },
+      {
+        "__id__": 24
       }
     ],
     "_prefab": null,
@@ -173,7 +173,7 @@
     "_priority": 0,
     "_fov": 45,
     "_fovAxis": 0,
-    "_orthoHeight": 455.07082152974505,
+    "_orthoHeight": 476.19047619047615,
     "_near": 0,
     "_far": 2000,
     "_color": {
@@ -228,6 +228,9 @@
     "_components": [
       {
         "__id__": 20
+      },
+      {
+        "__id__": 21
       }
     ],
     "_prefab": null,
@@ -767,6 +770,18 @@
     "_id": "27pbYVBQNAVKCrHMFfr+6M"
   },
   {
+    "__type__": "7be13n1tIBMt6+Y6dfESkvd",
+    "_name": "",
+    "_objFlags": 0,
+    "__editorExtras__": {},
+    "node": {
+      "__id__": 5
+    },
+    "_enabled": true,
+    "__prefab": null,
+    "_id": "9884vBgg5KAJAJ2gVTHCZY"
+  },
+  {
     "__type__": "cc.UITransform",
     "_name": "",
     "_objFlags": 0,
@@ -837,28 +852,28 @@
   {
     "__type__": "cc.SceneGlobals",
     "ambient": {
-      "__id__": 25
-    },
-    "shadows": {
       "__id__": 26
     },
-    "_skybox": {
+    "shadows": {
       "__id__": 27
     },
-    "fog": {
+    "_skybox": {
       "__id__": 28
     },
-    "octree": {
+    "fog": {
       "__id__": 29
     },
-    "skin": {
+    "octree": {
       "__id__": 30
     },
-    "lightProbeInfo": {
+    "skin": {
       "__id__": 31
     },
-    "postSettings": {
+    "lightProbeInfo": {
       "__id__": 32
+    },
+    "postSettings": {
+      "__id__": 33
     },
     "bakedWithStationaryMainLight": false,
     "bakedWithHighpLightmap": false
