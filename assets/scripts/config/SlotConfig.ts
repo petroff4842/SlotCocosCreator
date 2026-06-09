@@ -1,0 +1,10 @@
+export const SlotConfig = {
+  REEL_COUNT: 5,
+  VISIBLE_ROWS: 3,
+
+  SYMBOL_WIDTH: 140,
+  SYMBOL_HEIGHT: 140,
+
+  REEL_AREA_WIDTH: 700,
+  REEL_AREA_HEIGHT: 420,
+};
