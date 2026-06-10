@@ -2,6 +2,7 @@ import { _decorator, Component, Node, UITransform } from "cc";
 import { AssetLoader, SymbolFrames } from "../services/AsssetsLoader";
 import { ReelView } from "../view/ReelView";
 import { SlotConfig } from "../config/SlotConfig";
+import { SlotModel } from "../model/SlotModel";
 const { ccclass, property } = _decorator;
 
 @ccclass("SlotGame")
@@ -9,6 +10,7 @@ export class SlotGame extends Component {
   @property(Node)
   private reelsRoot!: Node;
   private reels: ReelView[] = [];
+  private readonly model = new SlotModel();
 
   async start() {
     const frames = await AssetLoader.loadSymbolFrames();
@@ -20,8 +22,9 @@ export class SlotGame extends Component {
     this.reels.forEach((reel) => reel.startSpin());
 
     this.scheduleOnce(() => {
+      const stops = this.model.generateSpinResult();
       this.reels.forEach((reel, index) => {
-        reel.stopAt(10 + index);
+        reel.stopAt(stops[index]);
       });
     }, 4);
   }
