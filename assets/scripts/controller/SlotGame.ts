@@ -44,7 +44,7 @@ export class SlotGame extends Component {
       if (reelIndex === 0) {
         reelView.startSpin();
         this.scheduleOnce(() => {
-          reelView.stopSpin();
+          reelView.stopAt(35);
         }, 4);
       }
     }

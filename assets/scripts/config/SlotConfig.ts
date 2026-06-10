@@ -85,6 +85,8 @@ export const REEL_STRIP: SymbolId[] = [
 export const SPIN_CONFIG = {
   SPEED: 2600,
   BUFFER_ROWS: 4,
+  STOP_DURATION: 0.65,
+  STOP_BUFFER_ITEMS: 2,
 };
 
 export function wrapStripIndex(index: number): number {

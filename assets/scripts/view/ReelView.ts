@@ -116,7 +116,7 @@ export class ReelView extends Component {
       .start();
   }
 
-  public stopSpin(): void {
+  public stopAt(stopIndex: number): void {
     if (!this.spinTween) {
       return;
     }
@@ -125,12 +125,18 @@ export class ReelView extends Component {
     this.spinTween = null;
 
     const itemHeight = SlotConfig.SYMBOL_HEIGHT;
-    const targetOffset =
-      Math.floor(this.scroll.offset / itemHeight) * itemHeight;
+
+    const targetItem =
+      Math.ceil(this.scroll.offset / itemHeight) -
+      SPIN_CONFIG.STOP_BUFFER_ITEMS;
+
+    const targetOffset = targetItem * itemHeight;
+
+    this.renderShift = wrapStripIndex(stopIndex - targetItem);
 
     this.stopTween = tween(this.scroll)
       .to(
-        0.5,
+        SPIN_CONFIG.STOP_DURATION,
         { offset: targetOffset },
         {
           easing: "backOut",
@@ -138,6 +144,8 @@ export class ReelView extends Component {
         },
       )
       .call(() => {
+        this.scroll.offset = targetOffset;
+        this.relayout();
         this.stopTween = null;
       })
       .start();
