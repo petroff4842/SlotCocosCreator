@@ -8,6 +8,7 @@ const { ccclass, property } = _decorator;
 export class SlotGame extends Component {
   @property(Node)
   private reelsRoot!: Node;
+  private reels: ReelView[] = [];
 
   async start() {
     const frames = await AssetLoader.loadSymbolFrames();
@@ -15,6 +16,14 @@ export class SlotGame extends Component {
 
     this.setupReelArea();
     this.createReels(frames);
+
+    this.reels.forEach((reel) => reel.startSpin());
+
+    this.scheduleOnce(() => {
+      this.reels.forEach((reel, index) => {
+        reel.stopAt(10 + index);
+      });
+    }, 4);
   }
 
   private setupReelArea(): void {
@@ -41,12 +50,7 @@ export class SlotGame extends Component {
 
       const reelView = reelNode.addComponent(ReelView);
       reelView.init(frames);
-      if (reelIndex === 0) {
-        reelView.startSpin();
-        this.scheduleOnce(() => {
-          reelView.stopAt(35);
-        }, 4);
-      }
+      this.reels.push(reelView);
     }
   }
 }
