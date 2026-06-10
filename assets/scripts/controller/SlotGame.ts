@@ -41,6 +41,12 @@ export class SlotGame extends Component {
 
       const reelView = reelNode.addComponent(ReelView);
       reelView.init(frames);
+      if (reelIndex === 0) {
+        reelView.startSpin();
+        this.scheduleOnce(() => {
+          reelView.stopSpin();
+        }, 4);
+      }
     }
   }
 }

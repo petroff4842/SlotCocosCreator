@@ -5,6 +5,8 @@ import {
   Sprite,
   SpriteFrame,
   UITransform,
+  tween,
+  Tween,
 } from "cc";
 import {
   SlotConfig,
@@ -16,12 +18,16 @@ import {
 
 const { ccclass } = _decorator;
 
+type ScrollOffset = { offset: number };
+
 @ccclass("ReelView")
 export class ReelView extends Component {
   private frames: Map<SymbolId, SpriteFrame> = new Map();
   private symbolNodes: Node[] = [];
-  private scrollOffset: number = 0;
   private renderShift: number = 0;
+  private readonly scroll: ScrollOffset = { offset: 0 };
+  private spinTween: Tween<ScrollOffset> | null = null;
+  private stopTween: Tween<ScrollOffset> | null = null;
 
   public init(frames: Map<SymbolId, SpriteFrame>): void {
     this.frames = frames;
@@ -68,7 +74,7 @@ export class ReelView extends Component {
     const viewportHeight = SlotConfig.SYMBOL_HEIGHT * SlotConfig.VISIBLE_ROWS;
 
     const firstIndex =
-      Math.floor(this.scrollOffset / itemHeight) - SPIN_CONFIG.BUFFER_ROWS;
+      Math.floor(this.scroll.offset / itemHeight) - SPIN_CONFIG.BUFFER_ROWS;
 
     for (let i = 0; i < this.symbolNodes.length; i++) {
       const node = this.symbolNodes[i];
@@ -83,9 +89,57 @@ export class ReelView extends Component {
 
       const y =
         viewportHeight / 2 -
-        ((firstIndex + i) * itemHeight - this.scrollOffset + itemHeight / 2);
+        ((firstIndex + i) * itemHeight - this.scroll.offset + itemHeight / 2);
 
       node.setPosition(0, y, 0);
     }
+  }
+
+  public startSpin(): void {
+    if (this.spinTween) {
+      return;
+    }
+
+    const loopDistance = SlotConfig.SYMBOL_HEIGHT;
+    const loopDuration = loopDistance / SPIN_CONFIG.SPEED;
+
+    this.spinTween = tween(this.scroll)
+      .by(
+        loopDuration,
+        { offset: -loopDistance },
+        {
+          easing: "linear",
+          onUpdate: () => this.relayout(),
+        },
+      )
+      .repeatForever()
+      .start();
+  }
+
+  public stopSpin(): void {
+    if (!this.spinTween) {
+      return;
+    }
+
+    this.spinTween.stop();
+    this.spinTween = null;
+
+    const itemHeight = SlotConfig.SYMBOL_HEIGHT;
+    const targetOffset =
+      Math.floor(this.scroll.offset / itemHeight) * itemHeight;
+
+    this.stopTween = tween(this.scroll)
+      .to(
+        0.5,
+        { offset: targetOffset },
+        {
+          easing: "backOut",
+          onUpdate: () => this.relayout(),
+        },
+      )
+      .call(() => {
+        this.stopTween = null;
+      })
+      .start();
   }
 }
