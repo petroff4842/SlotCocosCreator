@@ -6,7 +6,13 @@ import {
   SpriteFrame,
   UITransform,
 } from "cc";
-import { SlotConfig, SymbolId } from "../config/SlotConfig";
+import {
+  SlotConfig,
+  SymbolId,
+  REEL_STRIP,
+  SPIN_CONFIG,
+  wrapStripIndex,
+} from "../config/SlotConfig";
 
 const { ccclass } = _decorator;
 
@@ -14,8 +20,10 @@ const { ccclass } = _decorator;
 export class ReelView extends Component {
   private frames: Map<SymbolId, SpriteFrame> = new Map();
   private symbolNodes: Node[] = [];
+  private scrollOffset: number = 0;
+  private renderShift: number = 0;
 
-  public init(frames: Map<SymbolId, SpriteFrame>, symbols: SymbolId[]): void {
+  public init(frames: Map<SymbolId, SpriteFrame>): void {
     this.frames = frames;
 
     const uiTransform =
@@ -27,32 +35,18 @@ export class ReelView extends Component {
       SlotConfig.SYMBOL_HEIGHT * SlotConfig.VISIBLE_ROWS,
     );
 
-    this.createSymbols(symbols);
+    this.createSymbols();
   }
 
-  public setSymbols(symbols: SymbolId[]): void {
-    for (let row = 0; row < this.symbolNodes.length; row++) {
-      const node = this.symbolNodes[row];
-      const sprite = node.getComponent(Sprite);
+  private createSymbols(): void {
+    const totalRows = SlotConfig.VISIBLE_ROWS + SPIN_CONFIG.BUFFER_ROWS * 2;
 
-      if (!sprite) {
-        continue;
-      }
-
-      sprite.spriteFrame = this.frames.get(symbols[row]) ?? null;
-    }
-  }
-
-  private createSymbols(symbols: SymbolId[]): void {
     this.symbolNodes = [];
 
-    for (let row = 0; row < SlotConfig.VISIBLE_ROWS; row++) {
+    for (let row = 0; row < totalRows; row++) {
       const symbolNode = new Node(`Symbol_${row}`);
       symbolNode.setParent(this.node);
-
-      const y = SlotConfig.SYMBOL_HEIGHT - row * SlotConfig.SYMBOL_HEIGHT;
-
-      symbolNode.setPosition(0, y, 0);
+      symbolNode.setPosition(0, 0, 0);
 
       const uiTransform = symbolNode.addComponent(UITransform);
       uiTransform.setContentSize(
@@ -66,6 +60,32 @@ export class ReelView extends Component {
       this.symbolNodes.push(symbolNode);
     }
 
-    this.setSymbols(symbols);
+    this.relayout();
+  }
+
+  private relayout(): void {
+    const itemHeight = SlotConfig.SYMBOL_HEIGHT;
+    const viewportHeight = SlotConfig.SYMBOL_HEIGHT * SlotConfig.VISIBLE_ROWS;
+
+    const firstIndex =
+      Math.floor(this.scrollOffset / itemHeight) - SPIN_CONFIG.BUFFER_ROWS;
+
+    for (let i = 0; i < this.symbolNodes.length; i++) {
+      const node = this.symbolNodes[i];
+
+      const stripIndex = wrapStripIndex(firstIndex + i + this.renderShift);
+      const symbolId = REEL_STRIP[stripIndex];
+
+      const sprite = node.getComponent(Sprite);
+      if (sprite) {
+        sprite.spriteFrame = this.frames.get(symbolId) ?? null;
+      }
+
+      const y =
+        viewportHeight / 2 -
+        ((firstIndex + i) * itemHeight - this.scrollOffset + itemHeight / 2);
+
+      node.setPosition(0, y, 0);
+    }
   }
 }

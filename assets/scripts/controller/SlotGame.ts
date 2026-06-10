@@ -1,7 +1,7 @@
 import { _decorator, Component, Node, UITransform } from "cc";
 import { AssetLoader, SymbolFrames } from "../services/AsssetsLoader";
 import { ReelView } from "../view/ReelView";
-import { ALL_SYMBOLS, SlotConfig, SymbolId } from "../config/SlotConfig";
+import { SlotConfig } from "../config/SlotConfig";
 const { ccclass, property } = _decorator;
 
 @ccclass("SlotGame")
@@ -29,18 +29,6 @@ export class SlotGame extends Component {
       ?.setContentSize(SlotConfig.REEL_AREA_WIDTH, SlotConfig.REEL_AREA_HEIGHT);
   }
 
-  private createRandomSymbols(): SymbolId[] {
-    const symbols: SymbolId[] = [];
-    for (let i = 0; i < SlotConfig.VISIBLE_ROWS; i++) {
-      const randomSymbol =
-        ALL_SYMBOLS[Math.floor(Math.random() * ALL_SYMBOLS.length)];
-
-      symbols.push(randomSymbol);
-    }
-
-    return symbols;
-  }
-
   private createReels(frames: SymbolFrames): void {
     const totalWidth = SlotConfig.REEL_COUNT * SlotConfig.SYMBOL_WIDTH;
     const startX = -totalWidth / 2 + SlotConfig.SYMBOL_WIDTH / 2;
@@ -52,7 +40,7 @@ export class SlotGame extends Component {
       reelNode.setPosition(startX + reelIndex * SlotConfig.SYMBOL_WIDTH, 0, 0);
 
       const reelView = reelNode.addComponent(ReelView);
-      reelView.init(frames, this.createRandomSymbols());
+      reelView.init(frames);
     }
   }
 }

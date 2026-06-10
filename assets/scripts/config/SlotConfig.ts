@@ -48,3 +48,46 @@ export const SYMBOL_ASSET_PATHS: Record<SymbolId, string> = {
   [SymbolId.L4]: "symbols/9/spriteFrame",
   [SymbolId.L5]: "symbols/10/spriteFrame",
 };
+
+export const REEL_STRIP: SymbolId[] = [
+  SymbolId.L5,
+  SymbolId.L4,
+  SymbolId.L3,
+  SymbolId.L2,
+  SymbolId.L1,
+  SymbolId.H4,
+  SymbolId.L5,
+  SymbolId.Wild,
+  SymbolId.L3,
+  SymbolId.H3,
+  SymbolId.L2,
+  SymbolId.L4,
+  SymbolId.H2,
+  SymbolId.L1,
+  SymbolId.L5,
+  SymbolId.H1,
+  SymbolId.L3,
+  SymbolId.L4,
+  SymbolId.L2,
+  SymbolId.H4,
+  SymbolId.L1,
+  SymbolId.L5,
+  SymbolId.H3,
+  SymbolId.L4,
+  SymbolId.Wild,
+  SymbolId.L2,
+  SymbolId.L3,
+  SymbolId.H2,
+  SymbolId.L5,
+  SymbolId.L1,
+];
+
+export const SPIN_CONFIG = {
+  SPEED: 2600,
+  BUFFER_ROWS: 4,
+};
+
+export function wrapStripIndex(index: number): number {
+  const length = REEL_STRIP.length;
+  return ((index % length) + length) % length;
+}
