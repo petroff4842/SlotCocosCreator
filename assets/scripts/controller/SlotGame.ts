@@ -1,7 +1,7 @@
 import { _decorator, Component, Node, UITransform } from "cc";
 import { AssetLoader, SymbolFrames } from "../services/AsssetsLoader";
 import { ReelView } from "../view/ReelView";
-import { SlotConfig } from "../config/SlotConfig";
+import { SlotConfig, SPIN_CONFIG } from "../config/SlotConfig";
 import { SlotModel } from "../model/SlotModel";
 const { ccclass, property } = _decorator;
 
@@ -24,9 +24,11 @@ export class SlotGame extends Component {
     this.scheduleOnce(() => {
       const stops = this.model.generateSpinResult();
       this.reels.forEach((reel, index) => {
-        reel.stopAt(stops[index]);
+        this.scheduleOnce(() => {
+          reel.stopAt(stops[index]);
+        }, index * SPIN_CONFIG.REEL_STOP_STAGGER);
       });
-    }, 4);
+    }, 3);
   }
 
   private setupReelArea(): void {
