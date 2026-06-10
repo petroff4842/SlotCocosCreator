@@ -22,10 +22,11 @@ export class SlotGame extends Component {
     this.reels.forEach((reel) => reel.startSpin());
 
     this.scheduleOnce(() => {
-      const stops = this.model.generateSpinResult();
+      const result = this.model.generateSpinResult();
+      console.log("Generated spin result :", result);
       this.reels.forEach((reel, index) => {
         this.scheduleOnce(() => {
-          reel.stopAt(stops[index]);
+          reel.stopAt(result.stops[index]);
         }, index * SPIN_CONFIG.REEL_STOP_STAGGER);
       });
     }, 3);

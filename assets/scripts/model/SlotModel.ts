@@ -1,7 +1,17 @@
-import { REEL_STRIP, SlotConfig } from "../config/SlotConfig";
+import {
+  REEL_STRIP,
+  SlotConfig,
+  SymbolId,
+  gridFromStops,
+} from "../config/SlotConfig";
+
+export interface SpinResult {
+  stops: number[];
+  grid: SymbolId[][];
+}
 
 export class SlotModel {
-  public generateSpinResult(): number[] {
+  public generateSpinResult(): SpinResult {
     const stops: number[] = [];
 
     for (let i = 0; i < SlotConfig.REEL_COUNT; i++) {
@@ -9,6 +19,9 @@ export class SlotModel {
       stops.push(stopIndex);
     }
 
-    return stops;
+    return {
+      stops,
+      grid: gridFromStops(stops),
+    };
   }
 }
