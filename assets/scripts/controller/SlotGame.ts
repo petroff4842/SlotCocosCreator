@@ -25,8 +25,13 @@ export class SlotGame extends Component {
     this.scheduleOnce(() => {
       const result = this.model.generateSpinResult();
       console.log("Generated spin result :", result);
+
       const wins = evaluateWins(result.grid);
       console.log("Wins:", wins);
+
+      const totalWin = wins.reduce((sum, win) => sum + win.payout, 0);
+      console.log("Total win:", totalWin);
+
       this.reels.forEach((reel, index) => {
         this.scheduleOnce(() => {
           reel.stopAt(result.stops[index]);
