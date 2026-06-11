@@ -163,6 +163,7 @@ export const SPIN_CONFIG = {
   STOP_DURATION: 0.65,
   STOP_BUFFER_ITEMS: 2,
   REEL_STOP_STAGGER: 0.15,
+  AUTO_STOP_DELAY: 5,
 };
 
 export function wrapStripIndex(index: number): number {

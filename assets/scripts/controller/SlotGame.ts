@@ -66,7 +66,7 @@ export class SlotGame extends Component {
       return;
     }
     if (this.model.isSpinning) {
-      console.log("STOP CLICKED");
+      this.stop();
     }
   }
 
@@ -75,25 +75,42 @@ export class SlotGame extends Component {
     this.updateSpinButtonLabel();
     this.reels.forEach((reel) => reel.startSpin());
 
-    this.scheduleOnce(() => {
-      const result = this.model.generateSpinResult();
+    const autoStopDelay = SPIN_CONFIG.AUTO_STOP_DELAY;
+    if ((autoStopDelay ?? 0) > 0) {
+      this.scheduleOnce(this.autoStop, autoStopDelay);
+    }
+  }
 
-      console.log("Generated spin result:", result);
-      console.log("Wins:", result.wins);
-      console.log("Total win:", result.totalWin);
+  private stop(): void {
+    this.unschedule(this.autoStop);
+    this.model.requestStop();
+    this.updateSpinButtonLabel();
 
-      this.reels.forEach((reel, index) => {
-        this.scheduleOnce(() => {
-          reel.stopAt(result.stops[index]);
-          if (index === this.reels.length - 1) {
-            this.scheduleOnce(() => {
-              this.model.settle();
-              this.updateSpinButtonLabel();
-            }, SPIN_CONFIG.STOP_DURATION);
-          }
-        }, index * SPIN_CONFIG.REEL_STOP_STAGGER);
-      });
-    }, 3);
+    const result = this.model.generateSpinResult();
+
+    console.log("Generated spin result:", result);
+    console.log("Wins:", result.wins);
+    console.log("Total win:", result.totalWin);
+
+    this.reels.forEach((reel, index) => {
+      this.scheduleOnce(() => {
+        reel.stopAt(result.stops[index]);
+
+        if (index === this.reels.length - 1) {
+          this.scheduleOnce(() => {
+            this.model.settle();
+            this.updateSpinButtonLabel();
+          }, SPIN_CONFIG.STOP_DURATION);
+        }
+      }, index * SPIN_CONFIG.REEL_STOP_STAGGER);
+    });
+  }
+
+  private autoStop(): void {
+    console.log("Autostop triggered");
+    if (this.model.isSpinning) {
+      this.stop();
+    }
   }
 
   private updateSpinButtonLabel(): void {
