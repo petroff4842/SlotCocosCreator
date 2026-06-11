@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, UITransform, Button } from "cc";
+import { _decorator, Component, Node, UITransform, Button, Label } from "cc";
 import { AssetLoader, SymbolFrames } from "../services/AsssetsLoader";
 import { ReelView } from "../view/ReelView";
 import { SlotConfig, SPIN_CONFIG } from "../config/SlotConfig";
@@ -13,6 +13,9 @@ export class SlotGame extends Component {
   @property(Button)
   private spinButton!: Button;
 
+  @property(Label)
+  private spinLabel!: Label;
+
   private reels: ReelView[] = [];
   private readonly model = new SlotModel();
 
@@ -23,6 +26,7 @@ export class SlotGame extends Component {
     this.setupReelArea();
     this.createReels(frames);
     this.spinButton.node.on(Button.EventType.CLICK, this.onSpinClicked, this);
+    this.updateSpinButtonLabel();
   }
 
   private setupReelArea(): void {
@@ -68,6 +72,7 @@ export class SlotGame extends Component {
 
   private spin(): void {
     this.model.startSpin();
+    this.updateSpinButtonLabel();
     this.reels.forEach((reel) => reel.startSpin());
 
     this.scheduleOnce(() => {
@@ -83,10 +88,20 @@ export class SlotGame extends Component {
           if (index === this.reels.length - 1) {
             this.scheduleOnce(() => {
               this.model.settle();
+              this.updateSpinButtonLabel();
             }, SPIN_CONFIG.STOP_DURATION);
           }
         }, index * SPIN_CONFIG.REEL_STOP_STAGGER);
       });
     }, 3);
+  }
+
+  private updateSpinButtonLabel(): void {
+    if (this.model.isIdle) {
+      this.spinLabel.string = "SPIN";
+      return;
+    }
+
+    this.spinLabel.string = "STOP";
   }
 }
