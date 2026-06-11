@@ -7,31 +7,60 @@ export interface LineWin {
   payout: number;
 }
 
+function getLineMatch(lineSymbols: SymbolId[]): {
+  symbol: SymbolId;
+  count: number;
+} | null {
+  let targetSymbol: SymbolId | null = null;
+  let count = 0;
+
+  for (const symbol of lineSymbols) {
+    if (symbol === SymbolId.Wild) {
+      count++;
+      continue;
+    }
+
+    if (targetSymbol === null) {
+      targetSymbol = symbol;
+      count++;
+      continue;
+    }
+
+    if (symbol === targetSymbol) {
+      count++;
+      continue;
+    }
+
+    break;
+  }
+
+  if (targetSymbol === null) {
+    return {
+      symbol: SymbolId.Wild,
+      count,
+    };
+  }
+
+  return {
+    symbol: targetSymbol,
+    count,
+  };
+}
+
 export function evaluateWins(grid: SymbolId[][]): LineWin[] {
   const wins: LineWin[] = [];
 
   PAYLINES.forEach((line, lineIndex) => {
-    const firstSymbol = grid[line[0]][0];
+    const lineSymbols = line.map((row, reel) => grid[row][reel]);
 
-    let count = 1;
+    const match = getLineMatch(lineSymbols);
 
-    for (let reel = 1; reel < line.length; reel++) {
-      const row = line[reel];
-      const symbol = grid[row][reel];
-
-      if (symbol !== firstSymbol) {
-        break;
-      }
-
-      count++;
-    }
-
-    if (count >= 3) {
+    if (match && match.count >= 3) {
       wins.push({
         lineIndex,
-        symbol: firstSymbol,
-        count,
-        payout: PAYTABLE[firstSymbol][count],
+        symbol: match.symbol,
+        count: match.count,
+        payout: PAYTABLE[match.symbol][match.count],
       });
     }
   });
