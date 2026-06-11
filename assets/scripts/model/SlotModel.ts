@@ -7,6 +7,8 @@ import {
 
 import { evaluateWins, LineWin } from "./WinEvaluator";
 
+export type SpinPhase = "idle" | "spinning" | "stopping";
+
 export interface SpinResult {
   stops: number[];
   grid: SymbolId[][];
@@ -15,6 +17,7 @@ export interface SpinResult {
 }
 
 export class SlotModel {
+  private phase: SpinPhase = "idle";
   public generateSpinResult(): SpinResult {
     const stops: number[] = [];
 
@@ -32,5 +35,31 @@ export class SlotModel {
       wins,
       totalWin,
     };
+  }
+
+  public get isIdle(): boolean {
+    return this.phase === "idle";
+  }
+
+  public get isSpinning(): boolean {
+    return this.phase === "spinning";
+  }
+
+  public get isStopping(): boolean {
+    return this.phase === "stopping";
+  }
+
+  public startSpin(): void {
+    this.phase = "spinning";
+  }
+
+  public requestStop(): void {
+    if (this.phase === "spinning") {
+      this.phase = "stopping";
+    }
+  }
+
+  public settle(): void {
+    this.phase = "idle";
   }
 }

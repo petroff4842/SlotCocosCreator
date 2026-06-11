@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, UITransform } from "cc";
+import { _decorator, Component, Node, UITransform, Button } from "cc";
 import { AssetLoader, SymbolFrames } from "../services/AsssetsLoader";
 import { ReelView } from "../view/ReelView";
 import { SlotConfig, SPIN_CONFIG } from "../config/SlotConfig";
@@ -9,6 +9,10 @@ const { ccclass, property } = _decorator;
 export class SlotGame extends Component {
   @property(Node)
   private reelsRoot!: Node;
+
+  @property(Button)
+  private spinButton!: Button;
+
   private reels: ReelView[] = [];
   private readonly model = new SlotModel();
 
@@ -18,22 +22,7 @@ export class SlotGame extends Component {
 
     this.setupReelArea();
     this.createReels(frames);
-
-    this.reels.forEach((reel) => reel.startSpin());
-
-    this.scheduleOnce(() => {
-      const result = this.model.generateSpinResult();
-
-      console.log("Generated spin result :", result);
-      console.log("Wins:", result.wins);
-      console.log("Total win:", result.totalWin);
-
-      this.reels.forEach((reel, index) => {
-        this.scheduleOnce(() => {
-          reel.stopAt(result.stops[index]);
-        }, index * SPIN_CONFIG.REEL_STOP_STAGGER);
-      });
-    }, 3);
+    this.spinButton.node.on(Button.EventType.CLICK, this.onSpinClicked, this);
   }
 
   private setupReelArea(): void {
@@ -62,5 +51,42 @@ export class SlotGame extends Component {
       reelView.init(frames);
       this.reels.push(reelView);
     }
+  }
+
+  private onSpinClicked(): void {
+    if (this.model.isStopping) {
+      return;
+    }
+    if (this.model.isIdle) {
+      this.spin();
+      return;
+    }
+    if (this.model.isSpinning) {
+      console.log("STOP CLICKED");
+    }
+  }
+
+  private spin(): void {
+    this.model.startSpin();
+    this.reels.forEach((reel) => reel.startSpin());
+
+    this.scheduleOnce(() => {
+      const result = this.model.generateSpinResult();
+
+      console.log("Generated spin result:", result);
+      console.log("Wins:", result.wins);
+      console.log("Total win:", result.totalWin);
+
+      this.reels.forEach((reel, index) => {
+        this.scheduleOnce(() => {
+          reel.stopAt(result.stops[index]);
+          if (index === this.reels.length - 1) {
+            this.scheduleOnce(() => {
+              this.model.settle();
+            }, SPIN_CONFIG.STOP_DURATION);
+          }
+        }, index * SPIN_CONFIG.REEL_STOP_STAGGER);
+      });
+    }, 3);
   }
 }
