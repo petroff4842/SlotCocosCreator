@@ -5,9 +5,13 @@ import {
   gridFromStops,
 } from "../config/SlotConfig";
 
+import { evaluateWins, LineWin } from "./WinEvaluator";
+
 export interface SpinResult {
   stops: number[];
   grid: SymbolId[][];
+  wins: LineWin[];
+  totalWin: number;
 }
 
 export class SlotModel {
@@ -18,10 +22,15 @@ export class SlotModel {
       const stopIndex = Math.floor(Math.random() * REEL_STRIP.length);
       stops.push(stopIndex);
     }
+    const grid = gridFromStops(stops);
+    const wins = evaluateWins(grid);
+    const totalWin = wins.reduce((sum, win) => sum + win.payout, 0);
 
     return {
       stops,
-      grid: gridFromStops(stops),
+      grid,
+      wins,
+      totalWin,
     };
   }
 }
