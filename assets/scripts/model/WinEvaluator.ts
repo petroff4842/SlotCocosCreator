@@ -1,9 +1,10 @@
-import { PAYLINES, SymbolId } from "../config/SlotConfig";
+import { PAYLINES, SymbolId, PAYTABLE } from "../config/SlotConfig";
 
 export interface LineWin {
   lineIndex: number;
   symbol: SymbolId;
   count: number;
+  payout: number;
 }
 
 export function evaluateWins(grid: SymbolId[][]): LineWin[] {
@@ -30,6 +31,7 @@ export function evaluateWins(grid: SymbolId[][]): LineWin[] {
         lineIndex,
         symbol: firstSymbol,
         count,
+        payout: PAYTABLE[firstSymbol][count],
       });
     }
   });

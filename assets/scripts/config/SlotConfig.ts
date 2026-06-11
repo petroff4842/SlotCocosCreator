@@ -95,6 +95,68 @@ export const PAYLINES: number[][] = [
   [2, 1, 2, 1, 2],
 ];
 
+export const PAYTABLE = {
+  [SymbolId.Wild]: {
+    3: 100,
+    4: 1000,
+    5: 2000,
+  },
+
+  [SymbolId.H1]: {
+    3: 50,
+    4: 500,
+    5: 1000,
+  },
+
+  [SymbolId.H2]: {
+    3: 20,
+    4: 150,
+    5: 750,
+  },
+
+  [SymbolId.H3]: {
+    3: 15,
+    4: 100,
+    5: 500,
+  },
+
+  [SymbolId.H4]: {
+    3: 15,
+    4: 100,
+    5: 500,
+  },
+
+  [SymbolId.L1]: {
+    3: 10,
+    4: 75,
+    5: 250,
+  },
+
+  [SymbolId.L2]: {
+    3: 5,
+    4: 50,
+    5: 150,
+  },
+
+  [SymbolId.L3]: {
+    3: 5,
+    4: 25,
+    5: 150,
+  },
+
+  [SymbolId.L4]: {
+    3: 5,
+    4: 25,
+    5: 150,
+  },
+
+  [SymbolId.L5]: {
+    3: 5,
+    4: 15,
+    5: 100,
+  },
+};
+
 export const SPIN_CONFIG = {
   SPEED: 2600,
   BUFFER_ROWS: 4,
