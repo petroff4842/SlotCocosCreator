@@ -16,6 +16,9 @@ export class SlotGame extends Component {
   @property(Label)
   private spinLabel!: Label;
 
+  @property(Label)
+  private winLabel!: Label;
+
   private reels: ReelView[] = [];
   private readonly model = new SlotModel();
 
@@ -27,6 +30,7 @@ export class SlotGame extends Component {
     this.createReels(frames);
     this.spinButton.node.on(Button.EventType.CLICK, this.onSpinClicked, this);
     this.updateSpinButtonLabel();
+    this.updateWinLabel(0);
   }
 
   private setupReelArea(): void {
@@ -73,6 +77,7 @@ export class SlotGame extends Component {
   private spin(): void {
     this.model.startSpin();
     this.updateSpinButtonLabel();
+    this.updateWinLabel(0);
     this.reels.forEach((reel) => reel.startSpin());
 
     const autoStopDelay = SPIN_CONFIG.AUTO_STOP_DELAY;
@@ -84,7 +89,6 @@ export class SlotGame extends Component {
   private stop(): void {
     this.unschedule(this.autoStop);
     this.model.requestStop();
-    this.updateSpinButtonLabel();
 
     const stops = this.model.currentStops;
 
@@ -100,6 +104,7 @@ export class SlotGame extends Component {
             console.log("Wins:", result.wins);
             console.log("Total win:", result.totalWin);
 
+            this.updateWinLabel(result.totalWin);
             this.updateSpinButtonLabel();
           }, SPIN_CONFIG.STOP_DURATION);
         }
@@ -121,5 +126,9 @@ export class SlotGame extends Component {
     }
 
     this.spinLabel.string = "STOP";
+  }
+
+  private updateWinLabel(totalWin: number): void {
+    this.winLabel.string = `WIN: ${totalWin}`;
   }
 }
