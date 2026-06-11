@@ -18,23 +18,10 @@ export interface SpinResult {
 
 export class SlotModel {
   private phase: SpinPhase = "idle";
-  public generateSpinResult(): SpinResult {
-    const stops: number[] = [];
+  private stops: number[] = [];
 
-    for (let i = 0; i < SlotConfig.REEL_COUNT; i++) {
-      const stopIndex = Math.floor(Math.random() * REEL_STRIP.length);
-      stops.push(stopIndex);
-    }
-    const grid = gridFromStops(stops);
-    const wins = evaluateWins(grid);
-    const totalWin = wins.reduce((sum, win) => sum + win.payout, 0);
-
-    return {
-      stops,
-      grid,
-      wins,
-      totalWin,
-    };
+  public get currentStops(): readonly number[] {
+    return [...this.stops];
   }
 
   public get isIdle(): boolean {
@@ -50,6 +37,13 @@ export class SlotModel {
   }
 
   public startSpin(): void {
+    this.stops = [];
+
+    for (let i = 0; i < SlotConfig.REEL_COUNT; i++) {
+      const stopIndex = Math.floor(Math.random() * REEL_STRIP.length);
+      this.stops.push(stopIndex);
+    }
+
     this.phase = "spinning";
   }
 
@@ -59,7 +53,20 @@ export class SlotModel {
     }
   }
 
-  public settle(): void {
+  public settle(): SpinResult {
+    const grid = gridFromStops(this.stops);
+    const wins = evaluateWins(grid);
+    const totalWin = wins.reduce((sum, win) => sum + win.payout, 0);
+
+    const result: SpinResult = {
+      stops: this.stops,
+      grid,
+      wins,
+      totalWin,
+    };
+
     this.phase = "idle";
+
+    return result;
   }
 }

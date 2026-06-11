@@ -86,19 +86,20 @@ export class SlotGame extends Component {
     this.model.requestStop();
     this.updateSpinButtonLabel();
 
-    const result = this.model.generateSpinResult();
-
-    console.log("Generated spin result:", result);
-    console.log("Wins:", result.wins);
-    console.log("Total win:", result.totalWin);
+    const stops = this.model.currentStops;
 
     this.reels.forEach((reel, index) => {
       this.scheduleOnce(() => {
-        reel.stopAt(result.stops[index]);
+        reel.stopAt(stops[index]);
 
         if (index === this.reels.length - 1) {
           this.scheduleOnce(() => {
-            this.model.settle();
+            const result = this.model.settle();
+
+            console.log("Spin result:", result);
+            console.log("Wins:", result.wins);
+            console.log("Total win:", result.totalWin);
+
             this.updateSpinButtonLabel();
           }, SPIN_CONFIG.STOP_DURATION);
         }
