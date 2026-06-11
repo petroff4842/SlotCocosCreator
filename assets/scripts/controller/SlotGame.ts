@@ -3,6 +3,7 @@ import { AssetLoader, SymbolFrames } from "../services/AsssetsLoader";
 import { ReelView } from "../view/ReelView";
 import { SlotConfig, SPIN_CONFIG } from "../config/SlotConfig";
 import { SlotModel } from "../model/SlotModel";
+import { SlotView } from "../view/SlotView";
 const { ccclass, property } = _decorator;
 
 @ccclass("SlotGame")
@@ -21,16 +22,19 @@ export class SlotGame extends Component {
 
   private reels: ReelView[] = [];
   private readonly model = new SlotModel();
+  private view!: SlotView;
 
   async start() {
+    this.view = new SlotView(this.spinButton, this.spinLabel, this.winLabel);
+
     const frames = await AssetLoader.loadSymbolFrames();
     console.log("Loaded symbol frames:", frames.size);
 
     this.setupReelArea();
     this.createReels(frames);
     this.spinButton.node.on(Button.EventType.CLICK, this.onSpinClicked, this);
-    this.updateSpinButtonLabel();
-    this.updateWinLabel(0);
+    this.view.updateSpinButtonLabel(false);
+    this.view.resetWin();
   }
 
   private setupReelArea(): void {
@@ -76,8 +80,8 @@ export class SlotGame extends Component {
 
   private spin(): void {
     this.model.startSpin();
-    this.updateSpinButtonLabel();
-    this.updateWinLabel(0);
+    this.view.updateSpinButtonLabel(true);
+    this.view.resetWin();
     this.reels.forEach((reel) => reel.startSpin());
 
     const autoStopDelay = SPIN_CONFIG.AUTO_STOP_DELAY;
@@ -104,8 +108,8 @@ export class SlotGame extends Component {
             console.log("Wins:", result.wins);
             console.log("Total win:", result.totalWin);
 
-            this.updateWinLabel(result.totalWin);
-            this.updateSpinButtonLabel();
+            this.view.animateWin(result.totalWin);
+            this.view.updateSpinButtonLabel(false);
           }, SPIN_CONFIG.STOP_DURATION);
         }
       }, index * SPIN_CONFIG.REEL_STOP_STAGGER);
@@ -117,18 +121,5 @@ export class SlotGame extends Component {
     if (this.model.isSpinning) {
       this.stop();
     }
-  }
-
-  private updateSpinButtonLabel(): void {
-    if (this.model.isIdle) {
-      this.spinLabel.string = "SPIN";
-      return;
-    }
-
-    this.spinLabel.string = "STOP";
-  }
-
-  private updateWinLabel(totalWin: number): void {
-    this.winLabel.string = `WIN: ${totalWin}`;
   }
 }
