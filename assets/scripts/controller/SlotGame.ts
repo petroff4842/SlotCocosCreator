@@ -1,7 +1,6 @@
-import { _decorator, Component, Node, UITransform, Button, Label } from "cc";
-import { AssetLoader, SymbolFrames } from "../services/AsssetsLoader";
-import { ReelView } from "../view/ReelView";
-import { SlotConfig, SPIN_CONFIG } from "../config/SlotConfig";
+import { _decorator, Component, Node, Button, Label } from "cc";
+import { AssetLoader } from "../services/AsssetsLoader";
+import { SPIN_CONFIG } from "../config/SlotConfig";
 import { SlotModel } from "../model/SlotModel";
 import { SlotView } from "../view/SlotView";
 const { ccclass, property } = _decorator;
@@ -20,49 +19,25 @@ export class SlotGame extends Component {
   @property(Label)
   private winLabel!: Label;
 
-  private reels: ReelView[] = [];
   private readonly model = new SlotModel();
   private view!: SlotView;
 
   async start() {
-    this.view = new SlotView(this.spinButton, this.spinLabel, this.winLabel);
+    this.view = new SlotView(
+      this.reelsRoot,
+      this.spinButton,
+      this.spinLabel,
+      this.winLabel,
+    );
 
     const frames = await AssetLoader.loadSymbolFrames();
     console.log("Loaded symbol frames:", frames.size);
 
-    this.setupReelArea();
-    this.createReels(frames);
+    this.view.setupReelArea();
+    this.view.createReels(frames);
     this.spinButton.node.on(Button.EventType.CLICK, this.onSpinClicked, this);
     this.view.updateSpinButtonLabel(false);
     this.view.resetWin();
-  }
-
-  private setupReelArea(): void {
-    const reelArea = this.reelsRoot.parent?.parent;
-    const reelMask = this.reelsRoot.parent;
-
-    reelArea
-      ?.getComponent(UITransform)
-      ?.setContentSize(SlotConfig.REEL_AREA_WIDTH, SlotConfig.REEL_AREA_HEIGHT);
-    reelMask
-      ?.getComponent(UITransform)
-      ?.setContentSize(SlotConfig.REEL_AREA_WIDTH, SlotConfig.REEL_AREA_HEIGHT);
-  }
-
-  private createReels(frames: SymbolFrames): void {
-    const totalWidth = SlotConfig.REEL_COUNT * SlotConfig.SYMBOL_WIDTH;
-    const startX = -totalWidth / 2 + SlotConfig.SYMBOL_WIDTH / 2;
-
-    for (let reelIndex = 0; reelIndex < SlotConfig.REEL_COUNT; reelIndex++) {
-      const reelNode = new Node(`Reel_${reelIndex}`);
-      reelNode.setParent(this.reelsRoot);
-
-      reelNode.setPosition(startX + reelIndex * SlotConfig.SYMBOL_WIDTH, 0, 0);
-
-      const reelView = reelNode.addComponent(ReelView);
-      reelView.init(frames);
-      this.reels.push(reelView);
-    }
   }
 
   private onSpinClicked(): void {
@@ -82,7 +57,7 @@ export class SlotGame extends Component {
     this.model.startSpin();
     this.view.updateSpinButtonLabel(true);
     this.view.resetWin();
-    this.reels.forEach((reel) => reel.startSpin());
+    this.view.startReelsSpin();
 
     const autoStopDelay = SPIN_CONFIG.AUTO_STOP_DELAY;
     if ((autoStopDelay ?? 0) > 0) {
@@ -96,11 +71,11 @@ export class SlotGame extends Component {
 
     const stops = this.model.currentStops;
 
-    this.reels.forEach((reel, index) => {
+    for (let index = 0; index < stops.length; index++) {
       this.scheduleOnce(() => {
-        reel.stopAt(stops[index]);
+        this.view.stopReel(index, stops[index]);
 
-        if (index === this.reels.length - 1) {
+        if (index === stops.length - 1) {
           this.scheduleOnce(() => {
             const result = this.model.settle();
 
@@ -113,7 +88,7 @@ export class SlotGame extends Component {
           }, SPIN_CONFIG.STOP_DURATION);
         }
       }, index * SPIN_CONFIG.REEL_STOP_STAGGER);
-    });
+    }
   }
 
   private autoStop(): void {
