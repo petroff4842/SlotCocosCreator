@@ -3,6 +3,7 @@ import { AssetLoader, SymbolFrames } from "../services/AsssetsLoader";
 import { ReelView } from "../view/ReelView";
 import { SlotConfig, SPIN_CONFIG } from "../config/SlotConfig";
 import { SlotModel } from "../model/SlotModel";
+import { evaluateWins } from "../model/WinEvaluator";
 const { ccclass, property } = _decorator;
 
 @ccclass("SlotGame")
@@ -24,6 +25,8 @@ export class SlotGame extends Component {
     this.scheduleOnce(() => {
       const result = this.model.generateSpinResult();
       console.log("Generated spin result :", result);
+      const wins = evaluateWins(result.grid);
+      console.log("Wins:", wins);
       this.reels.forEach((reel, index) => {
         this.scheduleOnce(() => {
           reel.stopAt(result.stops[index]);
