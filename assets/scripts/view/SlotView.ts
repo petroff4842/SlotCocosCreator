@@ -1,4 +1,13 @@
-import { Button, Label, Node, Tween, tween, UITransform } from "cc";
+import {
+  Button,
+  Color,
+  Label,
+  Node,
+  Sprite,
+  Tween,
+  tween,
+  UITransform,
+} from "cc";
 import { ReelView } from "./ReelView";
 import { SlotConfig } from "../config/SlotConfig";
 import { SymbolFrames } from "../services/AsssetsLoader";
@@ -56,6 +65,18 @@ export class SlotView {
 
   public updateSpinButtonLabel(isSpinning: boolean): void {
     this.spinLabel.string = isSpinning ? "STOP" : "SPIN";
+  }
+
+  public setSpinButtonInteractable(interactable: boolean): void {
+    this.spinButton.interactable = interactable;
+
+    const sprite = this.spinButton.getComponent(Sprite);
+
+    if (!sprite) {
+      return;
+    }
+
+    sprite.color = interactable ? Color.WHITE : new Color(120, 120, 120, 255);
   }
 
   public resetWin(): void {

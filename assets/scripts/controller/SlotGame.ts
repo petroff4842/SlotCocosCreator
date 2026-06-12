@@ -22,6 +22,8 @@ export class SlotGame extends Component {
   private readonly model = new SlotModel();
   private view!: SlotView;
 
+  private enableStopCallback: (() => void) | null = null;
+
   async start() {
     this.view = new SlotView(
       this.reelsRoot,
@@ -59,13 +61,26 @@ export class SlotGame extends Component {
     this.view.resetWin();
     this.view.startReelsSpin();
 
+    this.view.setSpinButtonInteractable(false);
+
+    this.enableStopCallback = () => {
+      this.view.setSpinButtonInteractable(true);
+      this.enableStopCallback = null;
+    };
+
+    this.scheduleOnce(this.enableStopCallback, SPIN_CONFIG.MIN_SPIN_DURATION);
+
     const autoStopDelay = SPIN_CONFIG.AUTO_STOP_DELAY;
     if ((autoStopDelay ?? 0) > 0) {
       this.scheduleOnce(this.autoStop, autoStopDelay);
     }
   }
 
-  private stop(): void {
+  private stop(disableButton = true): void {
+    if (disableButton) {
+      this.view.setSpinButtonInteractable(false);
+    }
+
     this.unschedule(this.autoStop);
     this.model.requestStop();
 
@@ -86,6 +101,7 @@ export class SlotGame extends Component {
             this.view.animateWin(result.totalWin);
             this.view.highlightWins(result.wins);
             this.view.updateSpinButtonLabel(false);
+            this.view.setSpinButtonInteractable(true);
           }, SPIN_CONFIG.STOP_DURATION);
         }
       }, index * SPIN_CONFIG.REEL_STOP_STAGGER);
@@ -95,7 +111,7 @@ export class SlotGame extends Component {
   private autoStop(): void {
     console.log("Autostop triggered");
     if (this.model.isSpinning) {
-      this.stop();
+      this.stop(false);
     }
   }
 }
