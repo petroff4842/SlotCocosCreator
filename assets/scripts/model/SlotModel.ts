@@ -1,10 +1,6 @@
-import {
-  REEL_STRIP,
-  SlotConfig,
-  SymbolId,
-  gridFromStops,
-} from "../config/SlotConfig";
+import { REEL_STRIP, SlotConfig, SymbolId } from "../config/SlotConfig";
 
+import { gridFromStops } from "./GridBuilder";
 import { evaluateWins, LineWin } from "./WinEvaluator";
 
 export type SpinPhase = "idle" | "spinning" | "stopping";

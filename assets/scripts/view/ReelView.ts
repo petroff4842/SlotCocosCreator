@@ -16,8 +16,9 @@ import {
   SymbolId,
   REEL_STRIP,
   SPIN_CONFIG,
-  wrapStripIndex,
 } from "../config/SlotConfig";
+
+import { wrapStripIndex } from "../model/GridBuilder";
 
 const { ccclass } = _decorator;
 
@@ -38,10 +39,7 @@ export class ReelView extends Component {
   private highlightNodes: Node[] = [];
   private highlightTweens: (Tween<Node> | undefined)[] = [];
 
-  public init(
-    frames: Map<SymbolId, SpriteFrame>,
-    initialStripIndex = 0,
-  ): void {
+  public init(frames: Map<SymbolId, SpriteFrame>, initialStripIndex = 0): void {
     this.frames = frames;
     this.renderShift = wrapStripIndex(initialStripIndex);
 

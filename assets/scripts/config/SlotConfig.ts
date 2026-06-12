@@ -164,26 +164,5 @@ export const SPIN_CONFIG = {
   STOP_BUFFER_ITEMS: 2,
   REEL_STOP_STAGGER: 0.15,
   AUTO_STOP_DELAY: 5,
-  MIN_SPIN_DURATION: 0.7,
+  MIN_SPIN_DURATION: 0.8,
 };
-
-export function wrapStripIndex(index: number): number {
-  const length = REEL_STRIP.length;
-  return ((index % length) + length) % length;
-}
-
-export function gridFromStops(stops: number[]): SymbolId[][] {
-  const grid: SymbolId[][] = [];
-
-  for (let row = 0; row < SlotConfig.VISIBLE_ROWS; row++) {
-    grid[row] = [];
-
-    for (let reel = 0; reel < SlotConfig.REEL_COUNT; reel++) {
-      const stripIndex = wrapStripIndex(stops[reel] + row);
-
-      grid[row][reel] = REEL_STRIP[stripIndex];
-    }
-  }
-
-  return grid;
-}
