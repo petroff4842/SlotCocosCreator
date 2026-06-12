@@ -6,7 +6,6 @@ import {
   Node,
   Sprite,
   SpriteFrame,
-  UIOpacity,
   UITransform,
   tween,
   Tween,
@@ -23,6 +22,11 @@ import {
 const { ccclass } = _decorator;
 
 type ScrollOffset = { offset: number };
+
+const HIGHLIGHT_MIN_SCALE = 0.9;
+const HIGHLIGHT_MAX_SCALE = 1.05;
+const HIGHLIGHT_MIN_OPACITY = 0;
+const HIGHLIGHT_MAX_OPACITY = 170;
 
 @ccclass("ReelView")
 export class ReelView extends Component {
@@ -89,18 +93,7 @@ export class ReelView extends Component {
       );
 
       const graphics = highlightNode.addComponent(Graphics);
-      graphics.fillColor = new Color(255, 230, 80, 120);
-      graphics.roundRect(
-        -SlotConfig.SYMBOL_WIDTH / 2,
-        -SlotConfig.SYMBOL_HEIGHT / 2,
-        SlotConfig.SYMBOL_WIDTH,
-        SlotConfig.SYMBOL_HEIGHT,
-        8,
-      );
-      graphics.fill();
-
-      const opacity = highlightNode.addComponent(UIOpacity);
-      opacity.opacity = 140;
+      this.drawHighlight(graphics, 120);
 
       const y = SlotConfig.SYMBOL_HEIGHT - row * SlotConfig.SYMBOL_HEIGHT;
 
@@ -109,6 +102,19 @@ export class ReelView extends Component {
 
       this.highlightNodes.push(highlightNode);
     }
+  }
+
+  private drawHighlight(graphics: Graphics, opacity: number): void {
+    graphics.clear();
+    graphics.fillColor = new Color(255, 230, 80, opacity);
+    graphics.roundRect(
+      -SlotConfig.SYMBOL_WIDTH / 2,
+      -SlotConfig.SYMBOL_HEIGHT / 2,
+      SlotConfig.SYMBOL_WIDTH,
+      SlotConfig.SYMBOL_HEIGHT,
+      8,
+    );
+    graphics.fill();
   }
 
   private relayout(): void {
@@ -139,15 +145,23 @@ export class ReelView extends Component {
 
   public setHighlight(row: number, active: boolean): void {
     const highlightNode = this.highlightNodes[row];
+    const symbolNode = this.symbolNodes[row + SPIN_CONFIG.BUFFER_ROWS];
 
-    if (!highlightNode) {
+    if (!highlightNode || !symbolNode) {
       return;
     }
 
     this.highlightTweens[row]?.stop();
     this.highlightTweens[row] = undefined;
 
+    const graphics = highlightNode.getComponent(Graphics);
+
     if (!active) {
+      highlightNode.setScale(1, 1, 1);
+      symbolNode.setScale(1, 1, 1);
+      if (graphics) {
+        this.drawHighlight(graphics, HIGHLIGHT_MIN_OPACITY);
+      }
       highlightNode.active = false;
       return;
     }
@@ -155,10 +169,47 @@ export class ReelView extends Component {
     highlightNode.active = active;
 
     highlightNode.setScale(1, 1, 1);
+    symbolNode.setScale(1, 1, 1);
+    if (graphics) {
+      this.drawHighlight(graphics, HIGHLIGHT_MIN_OPACITY);
+    }
+
+    const updateOpacity = (): void => {
+      if (!graphics) {
+        return;
+      }
+
+      const scale = highlightNode.scale.x;
+      symbolNode.setScale(scale, scale, 1);
+      const progress = Math.min(
+        1,
+        Math.max(
+          0,
+          (scale - HIGHLIGHT_MIN_SCALE) /
+            (HIGHLIGHT_MAX_SCALE - HIGHLIGHT_MIN_SCALE),
+        ),
+      );
+      const opacity =
+        HIGHLIGHT_MIN_OPACITY +
+        (HIGHLIGHT_MAX_OPACITY - HIGHLIGHT_MIN_OPACITY) * progress;
+      this.drawHighlight(graphics, opacity);
+    };
 
     const tweenInstance = tween(highlightNode)
-      .to(0.35, { scale: new Vec3(0.96, 0.96, 1) })
-      .to(0.35, { scale: new Vec3(0.8, 0.8, 1) })
+      .to(
+        0.35,
+        {
+          scale: new Vec3(HIGHLIGHT_MIN_SCALE, HIGHLIGHT_MIN_SCALE, 1),
+        },
+        { onUpdate: updateOpacity },
+      )
+      .to(
+        0.35,
+        {
+          scale: new Vec3(HIGHLIGHT_MAX_SCALE, HIGHLIGHT_MAX_SCALE, 1),
+        },
+        { onUpdate: updateOpacity },
+      )
       .union()
       .repeatForever();
 
