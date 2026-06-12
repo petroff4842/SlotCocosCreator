@@ -57,13 +57,13 @@ export class SlotGame extends Component {
 
   private spin(): void {
     this.model.startSpin();
-    this.view.updateSpinButtonLabel(true);
     this.view.resetWin();
     this.view.startReelsSpin();
 
     this.view.setSpinButtonInteractable(false);
 
     this.enableStopCallback = () => {
+      this.view.updateSpinButtonLabel(true);
       this.view.setSpinButtonInteractable(true);
       this.enableStopCallback = null;
     };
