@@ -5,6 +5,7 @@ export interface LineWin {
   symbol: SymbolId;
   count: number;
   payout: number;
+  cells: { row: number; reel: number }[];
 }
 
 function getLineMatch(lineSymbols: SymbolId[]): {
@@ -56,11 +57,16 @@ export function evaluateWins(grid: SymbolId[][]): LineWin[] {
     const match = getLineMatch(lineSymbols);
 
     if (match && match.count >= 3) {
+      const cells = line.slice(0, match.count).map((row, reel) => ({
+        row,
+        reel,
+      }));
       wins.push({
         lineIndex,
         symbol: match.symbol,
         count: match.count,
         payout: PAYTABLE[match.symbol][match.count],
+        cells,
       });
     }
   });

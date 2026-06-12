@@ -2,6 +2,7 @@ import { Button, Label, Node, Tween, tween, UITransform } from "cc";
 import { ReelView } from "./ReelView";
 import { SlotConfig } from "../config/SlotConfig";
 import { SymbolFrames } from "../services/AsssetsLoader";
+import { LineWin } from "../model/WinEvaluator";
 
 export class SlotView {
   private readonly winCounter = { value: 0 };
@@ -61,6 +62,12 @@ export class SlotView {
     Tween.stopAllByTarget(this.winCounter);
     this.winCounter.value = 0;
     this.updateWinLabel(0);
+
+    this.reels.forEach((reel) => {
+      for (let row = 0; row < SlotConfig.VISIBLE_ROWS; row++) {
+        reel.setHighlight(row, false);
+      }
+    });
   }
 
   public animateWin(totalWin: number): void {
@@ -87,5 +94,13 @@ export class SlotView {
         this.updateWinLabel(totalWin);
       })
       .start();
+  }
+
+  public highlightWins(wins: LineWin[]): void {
+    wins.forEach((win) => {
+      win.cells.forEach((cell) => {
+        this.reels[cell.reel]?.setHighlight(cell.row, true);
+      });
+    });
   }
 }

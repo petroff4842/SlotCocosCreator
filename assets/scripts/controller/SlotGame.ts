@@ -84,6 +84,7 @@ export class SlotGame extends Component {
             console.log("Total win:", result.totalWin);
 
             this.view.animateWin(result.totalWin);
+            this.view.highlightWins(result.wins);
             this.view.updateSpinButtonLabel(false);
           }, SPIN_CONFIG.STOP_DURATION);
         }

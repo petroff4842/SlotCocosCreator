@@ -1,12 +1,16 @@
 import {
   _decorator,
+  Color,
   Component,
+  Graphics,
   Node,
   Sprite,
   SpriteFrame,
+  UIOpacity,
   UITransform,
   tween,
   Tween,
+  Vec3,
 } from "cc";
 import {
   SlotConfig,
@@ -27,7 +31,8 @@ export class ReelView extends Component {
   private renderShift: number = 0;
   private readonly scroll: ScrollOffset = { offset: 0 };
   private spinTween: Tween<ScrollOffset> | null = null;
-  private stopTween: Tween<ScrollOffset> | null = null;
+  private highlightNodes: Node[] = [];
+  private highlightTweens: (Tween<Node> | undefined)[] = [];
 
   public init(frames: Map<SymbolId, SpriteFrame>): void {
     this.frames = frames;
@@ -42,6 +47,7 @@ export class ReelView extends Component {
     );
 
     this.createSymbols();
+    this.createHighlights();
   }
 
   private createSymbols(): void {
@@ -69,6 +75,42 @@ export class ReelView extends Component {
     this.relayout();
   }
 
+  private createHighlights(): void {
+    this.highlightNodes = [];
+
+    for (let row = 0; row < SlotConfig.VISIBLE_ROWS; row++) {
+      const highlightNode = new Node(`Highlight_${row}`);
+      highlightNode.setParent(this.node);
+
+      const uiTransform = highlightNode.addComponent(UITransform);
+      uiTransform.setContentSize(
+        SlotConfig.SYMBOL_WIDTH,
+        SlotConfig.SYMBOL_HEIGHT,
+      );
+
+      const graphics = highlightNode.addComponent(Graphics);
+      graphics.fillColor = new Color(255, 230, 80, 120);
+      graphics.roundRect(
+        -SlotConfig.SYMBOL_WIDTH / 2,
+        -SlotConfig.SYMBOL_HEIGHT / 2,
+        SlotConfig.SYMBOL_WIDTH,
+        SlotConfig.SYMBOL_HEIGHT,
+        8,
+      );
+      graphics.fill();
+
+      const opacity = highlightNode.addComponent(UIOpacity);
+      opacity.opacity = 140;
+
+      const y = SlotConfig.SYMBOL_HEIGHT - row * SlotConfig.SYMBOL_HEIGHT;
+
+      highlightNode.setPosition(0, y, 0);
+      highlightNode.active = false;
+
+      this.highlightNodes.push(highlightNode);
+    }
+  }
+
   private relayout(): void {
     const itemHeight = SlotConfig.SYMBOL_HEIGHT;
     const viewportHeight = SlotConfig.SYMBOL_HEIGHT * SlotConfig.VISIBLE_ROWS;
@@ -93,6 +135,35 @@ export class ReelView extends Component {
 
       node.setPosition(0, y, 0);
     }
+  }
+
+  public setHighlight(row: number, active: boolean): void {
+    const highlightNode = this.highlightNodes[row];
+
+    if (!highlightNode) {
+      return;
+    }
+
+    this.highlightTweens[row]?.stop();
+    this.highlightTweens[row] = undefined;
+
+    if (!active) {
+      highlightNode.active = false;
+      return;
+    }
+
+    highlightNode.active = active;
+
+    highlightNode.setScale(1, 1, 1);
+
+    const tweenInstance = tween(highlightNode)
+      .to(0.35, { scale: new Vec3(0.96, 0.96, 1) })
+      .to(0.35, { scale: new Vec3(0.8, 0.8, 1) })
+      .union()
+      .repeatForever();
+
+    this.highlightTweens[row] = tweenInstance;
+    tweenInstance.start();
   }
 
   public startSpin(): void {
@@ -134,7 +205,7 @@ export class ReelView extends Component {
 
     this.renderShift = wrapStripIndex(stopIndex - targetItem);
 
-    this.stopTween = tween(this.scroll)
+    tween(this.scroll)
       .to(
         SPIN_CONFIG.STOP_DURATION,
         { offset: targetOffset },
@@ -146,7 +217,6 @@ export class ReelView extends Component {
       .call(() => {
         this.scroll.offset = targetOffset;
         this.relayout();
-        this.stopTween = null;
       })
       .start();
   }
