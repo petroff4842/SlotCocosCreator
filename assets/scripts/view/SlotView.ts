@@ -9,7 +9,7 @@ import {
   UITransform,
 } from "cc";
 import { ReelView } from "./ReelView";
-import { SlotConfig } from "../config/SlotConfig";
+import { REEL_STRIP, SlotConfig } from "../config/SlotConfig";
 import { SymbolFrames } from "../services/AsssetsLoader";
 import { LineWin } from "../model/WinEvaluator";
 
@@ -46,7 +46,10 @@ export class SlotView {
       reelNode.setPosition(startX + reelIndex * SlotConfig.SYMBOL_WIDTH, 0, 0);
 
       const reelView = reelNode.addComponent(ReelView);
-      reelView.init(frames);
+      const initialStripIndex = Math.floor(
+        (reelIndex * REEL_STRIP.length) / SlotConfig.REEL_COUNT,
+      );
+      reelView.init(frames, initialStripIndex);
       this.reels.push(reelView);
     }
   }

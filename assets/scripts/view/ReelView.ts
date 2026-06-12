@@ -38,8 +38,12 @@ export class ReelView extends Component {
   private highlightNodes: Node[] = [];
   private highlightTweens: (Tween<Node> | undefined)[] = [];
 
-  public init(frames: Map<SymbolId, SpriteFrame>): void {
+  public init(
+    frames: Map<SymbolId, SpriteFrame>,
+    initialStripIndex = 0,
+  ): void {
     this.frames = frames;
+    this.renderShift = wrapStripIndex(initialStripIndex);
 
     const uiTransform =
       this.node.getComponent(UITransform) ??
